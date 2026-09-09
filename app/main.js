@@ -20,7 +20,19 @@ function renderBorrowDevices(){const a=devices.filter(d=>d.store_id===session.st
 window.quickBorrow=id=>{showTab('borrow');$('borrowDevice').value=id;renderSelected()};
 function renderSelected(){const d=device($('borrowDevice').value);if(!d){$('selectedDevice').classList.add('hidden');$('selectedDevice').innerHTML='';return}$('selectedDevice').innerHTML=[["編號",d.asset_code],["型號",d.model_name],["容量",d.capacity],["顏色",d.color],["IMEI",d.imei]].map(([a,b])=>`<div><span>${a}</span><b>${esc(b)}</b></div>`).join('');$('selectedDevice').classList.remove('hidden')}
 async function createLoan(){const b={repair_order:$('repairOrder').value.trim(),device_id:$('borrowDevice').value,customer_name:$('custName').value.trim(),customer_phone:$('custPhone').value.trim(),customer_address:$('custAddress').value.trim(),id_type:$('idType').value,repair_device:$('repairDevice').value.trim()||null,repair_sn:$('repairSn').value.trim()||null,repair_reason:$('repairReason').value.trim()||null};if(!b.repair_order||!b.device_id||!b.customer_name||!b.customer_phone||!b.customer_address)return toast('維修單號、待用機與顧客基本資料請填完整');$('createLoanBtn').disabled=true;try{const r=await API.call('loan-create',b);currentCaptureUrl=r.capture_url;$('borrowForm').classList.add('hidden');$('qrStage').classList.remove('hidden');$('qrUrl').textContent=currentCaptureUrl;$('openCaptureBtn').href=currentCaptureUrl;const d=device(b.device_id);$('qrSummary').innerHTML=`<div class="grid2"><div class="field"><label>維修單號</label><input value="${esc(b.repair_order)}" disabled></div><div class="field"><label>門市／經辦人</label><input value="${esc(session.storeName)}｜${esc(session.employeeName)} ${esc(session.employeeNo)}" disabled></div><div class="field full"><label>待用機</label><input value="${esc(d?.model_name||'')}｜${esc(d?.imei||'')}" disabled></div></div>`;drawQR(currentCaptureUrl);await bootstrap();toast('借用資料已建立，QR CODE 已產生')}catch(e){toast(e.message||'建立失敗')}finally{$('createLoanBtn').disabled=false}}
-function drawQR(url){$('qrBox').innerHTML='';const c=document.createElement('canvas');$('qrBox').appendChild(c);if(window.QRCode?.toCanvas)QRCode.toCanvas(c,url,{width:220,margin:1,errorCorrectionLevel:'M'}).catch(()=>{$('qrBox').textContent='QR 產生失敗，請使用下方網址'});else $('qrBox').textContent='請使用下方網址'}
+async function drawQR(url){
+  const box=$('qrBox');
+  box.innerHTML='';
+  const c=document.createElement('canvas');
+  box.appendChild(c);
+  try{
+    if(!window.RepairLoanQR?.toCanvas) throw new Error('LOCAL_QR_LIBRARY_MISSING');
+    await window.RepairLoanQR.toCanvas(c,url,{width:220,margin:3,errorCorrectionLevel:'M'});
+  }catch(err){
+    console.error('QR_RENDER_FAILED',err);
+    box.innerHTML='<div style="padding:18px;text-align:center;color:#9f271d;font-weight:900;line-height:1.6">QR CODE 產生失敗<br><small>可先使用下方拍攝網址</small></div>';
+  }
+}
 function resetBorrow(){$('borrowForm').classList.remove('hidden');$('qrStage').classList.add('hidden');['repairOrder','custName','custPhone','custAddress','repairDevice','repairSn','repairReason'].forEach(id=>$(id).value='');$('borrowDevice').value='';renderSelected();currentCaptureUrl=''}
 function renderHistory(){const q=$('historySearch').value.trim().toLowerCase();const rows=loans.filter(l=>[l.repair_order,l.customer_name,l.employee_name_snapshot].join(' ').toLowerCase().includes(q));$('historyBody').innerHTML=rows.length?rows.map(l=>{const d=device(l.device_id);return `<tr><td class="mono">${esc(l.repair_order)}</td><td>${esc(l.customer_name)}</td><td>${esc(d?.model_name||'')}<br><span class="mono">${esc(d?.imei||'')}</span></td><td>${esc(l.employee_name_snapshot)}<br><span class="mono">${esc(l.employee_no_snapshot)}</span></td><td>${statusHtml(l.status)}</td><td>${esc(l.borrow_confirmed_at||'—')}</td><td>${l.drive_filename?`<span class="mono">${esc(l.drive_filename)}</span>`:'—'}</td></tr>`}).join(''):'<tr><td colspan="7" class="empty">目前沒有借用紀錄</td></tr>'}
 window.showTab=showTab; window.addEventListener('DOMContentLoaded',init);
