@@ -1345,13 +1345,33 @@ module.exports = QRCode;
 })(window);
 
 
-/* === RepairLoan main app V2.0.4 === */
+/* === RepairLoan main app V2.0.4.1 === */
 (() => {
 const API=window.RepairLoanAPI,cfg=window.REPAIRLOAN_CONFIG;
 const STORE_NAMES=["台北光華","桃園站前","桃園NOVA","中壢旗艦","中壢站前","中壢NOVA","新竹站前","台中站前","台中NOVA","東海NOVA","台南彩虹3C","高雄NOVA"];
 let session=null,stores=[],devices=[],loans=[],storeById=new Map(),deviceById=new Map(),currentCaptureUrl='';
 const $=id=>document.getElementById(id); const esc=v=>String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s]));
 function toast(t){const e=$('toast');e.textContent=t;e.classList.remove('hidden');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.add('hidden'),2600)}
+async function drawQR(url){
+  const box=$('qrBox');
+  if(!box)return;
+  box.innerHTML='';
+  try{
+    if(!window.RepairLoanQR?.toSvg)throw new Error('LOCAL_QR_RENDERER_MISSING');
+    box.innerHTML=window.RepairLoanQR.toSvg(String(url||''),{margin:3,errorCorrectionLevel:'M'});
+    const svg=box.querySelector('svg');
+    if(!svg)throw new Error('QR_SVG_NOT_CREATED');
+    svg.style.width='220px';
+    svg.style.height='220px';
+    svg.style.maxWidth='100%';
+    svg.style.maxHeight='100%';
+    svg.style.display='block';
+  }catch(err){
+    console.error('QR_RENDER_FAILED_V2041',err);
+    box.innerHTML='<div style="padding:18px;text-align:center;color:#9f271d;font-weight:900;line-height:1.6">QR CODE 產生失敗<br><small>'+esc(err?.message||err)+'</small></div>';
+    throw err;
+  }
+}
 function statusHtml(s){const m={available:['available','可借用'],reserved:['reserved','流程中'],loaned:['loaned','借出中'],returned_pending_archive:['pending','已歸還・待歸檔'],archived:['archived','已結案'],inactive:['inactive','停用'],draft:['reserved','待完成借出']};const x=m[s]||['pending',s];return `<span class="status ${x[0]}"><span class="dot"></span>${x[1]}</span>`}
 function storeName(id){return storeById.get(id)?.name||''} function device(id){return deviceById.get(id)}
 async function init(){ $('loginStore').innerHTML=STORE_NAMES.map(n=>`<option>${esc(n)}</option>`).join(''); document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>showTab(b.dataset.tab)); $('loginBtn').onclick=login; $('logoutBtn').onclick=logout; $('refreshBtn').onclick=bootstrap; $('createLoanBtn').onclick=createLoan; $('newBorrowBtn').onclick=resetBorrow; $('borrowDevice').onchange=renderSelected; $('invSearch').oninput=renderInventory; $('invStatus').onchange=renderInventory; $('allSearch').oninput=renderAll; $('allStore').onchange=renderAll; $('historySearch').oninput=renderHistory; const s=API.getSession(); if(s){session=s; try{await enter()}catch{API.clearSession();session=null}} }
