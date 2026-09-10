@@ -1,5 +1,5 @@
 window.REPAIRLOAN_CONFIG = Object.freeze({
-  version: "2.0.3",
+  version: "2.0.4",
   mode: "supabase-edge-appsscript",
   githubPagesUrl: "https://tony-chen0383.github.io/repairloan/",
   supabaseUrl: "https://cusixcnzbiowfwehiyjy.supabase.co",

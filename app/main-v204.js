@@ -1345,7 +1345,7 @@ module.exports = QRCode;
 })(window);
 
 
-/* === RepairLoan main app V2.0.3 === */
+/* === RepairLoan main app V2.0.4 === */
 (() => {
 const API=window.RepairLoanAPI,cfg=window.REPAIRLOAN_CONFIG;
 const STORE_NAMES=["台北光華","桃園站前","桃園NOVA","中壢旗艦","中壢站前","中壢NOVA","新竹站前","台中站前","台中NOVA","東海NOVA","台南彩虹3C","高雄NOVA"];
@@ -1367,23 +1367,41 @@ function renderAll(){const q=$('allSearch').value.trim().toLowerCase(),sf=$('all
 function renderBorrowDevices(){const a=devices.filter(d=>d.store_id===session.storeId&&d.status==='available');$('borrowDevice').innerHTML='<option value="">請選擇</option>'+a.map(d=>`<option value="${d.id}">${esc(d.model_name)}｜${esc(d.capacity)}｜${esc(d.color)}｜${esc(d.grade)}｜${esc(d.imei)}</option>`).join('');renderSelected()}
 window.quickBorrow=id=>{showTab('borrow');$('borrowDevice').value=id;renderSelected()};
 function renderSelected(){const d=device($('borrowDevice').value);if(!d){$('selectedDevice').classList.add('hidden');$('selectedDevice').innerHTML='';return}$('selectedDevice').innerHTML=[["編號",d.asset_code],["型號",d.model_name],["容量",d.capacity],["顏色",d.color],["IMEI",d.imei]].map(([a,b])=>`<div><span>${a}</span><b>${esc(b)}</b></div>`).join('');$('selectedDevice').classList.remove('hidden')}
-async function createLoan(){const b={repair_order:$('repairOrder').value.trim(),device_id:$('borrowDevice').value,customer_name:$('custName').value.trim(),customer_phone:$('custPhone').value.trim(),customer_address:$('custAddress').value.trim(),id_type:$('idType').value,repair_device:$('repairDevice').value.trim()||null,repair_sn:$('repairSn').value.trim()||null,repair_reason:$('repairReason').value.trim()||null};if(!b.repair_order||!b.device_id||!b.customer_name||!b.customer_phone||!b.customer_address)return toast('維修單號、待用機與顧客基本資料請填完整');$('createLoanBtn').disabled=true;try{const r=await API.call('loan-create',b);currentCaptureUrl=r.capture_url;$('borrowForm').classList.add('hidden');$('qrStage').classList.remove('hidden');$('qrUrl').textContent=currentCaptureUrl;$('openCaptureBtn').href=currentCaptureUrl;const d=device(b.device_id);$('qrSummary').innerHTML=`<div class="grid2"><div class="field"><label>維修單號</label><input value="${esc(b.repair_order)}" disabled></div><div class="field"><label>門市／經辦人</label><input value="${esc(session.storeName)}｜${esc(session.employeeName)} ${esc(session.employeeNo)}" disabled></div><div class="field full"><label>待用機</label><input value="${esc(d?.model_name||'')}｜${esc(d?.imei||'')}" disabled></div></div>`;drawQR(currentCaptureUrl);await bootstrap();toast('借用資料已建立，QR CODE 已產生')}catch(e){toast(e.message||'建立失敗')}finally{$('createLoanBtn').disabled=false}}
-async function drawQR(url){
-  const box=$('qrBox');
-  box.innerHTML='';
+async function createLoan(){
+  const b={
+    repair_order:$('repairOrder').value.trim(),
+    device_id:$('borrowDevice').value,
+    customer_name:$('custName').value.trim(),
+    customer_phone:$('custPhone').value.trim(),
+    customer_address:$('custAddress').value.trim(),
+    id_type:$('idType').value,
+    customer_id_no:$('custIdNo').value.trim().toUpperCase(),
+    repair_device:$('repairDevice').value.trim()||null,
+    repair_sn:$('repairSn').value.trim()||null,
+    repair_reason:$('repairReason').value.trim()||null
+  };
+  if(!b.repair_order||!b.device_id||!b.customer_name||!b.customer_phone||!b.customer_address||!b.customer_id_no){
+    return toast('維修單號、待用機、顧客基本資料與證件號碼請填完整');
+  }
+  if(b.customer_id_no.length<4)return toast('請確認證件號碼是否完整');
+  $('createLoanBtn').disabled=true;
   try{
-    if(!window.RepairLoanQR?.toSvg) throw new Error('LOCAL_QR_SVG_LIBRARY_MISSING');
-    box.innerHTML=window.RepairLoanQR.toSvg(url,{margin:3,errorCorrectionLevel:'M'});
-    const svg=box.querySelector('svg');
-    if(!svg) throw new Error('QR_SVG_NOT_CREATED');
-    svg.style.width='220px';
-    svg.style.height='220px';
-    svg.style.maxWidth='100%';
-    svg.style.maxHeight='100%';
-    svg.style.display='block';
-  }catch(err){
-    console.error('QR_RENDER_FAILED_V203',err);
-    box.innerHTML='<div style="padding:18px;text-align:center;color:#9f271d;font-weight:900;line-height:1.6">QR V2.0.3 產生失敗<br><small>'+esc(err?.message||err)+'</small></div>';
+    const r=await API.call('loan-create',b);
+    currentCaptureUrl=r.capture_url;
+    $('borrowForm').classList.add('hidden');
+    $('qrStage').classList.remove('hidden');
+    $('qrUrl').textContent=currentCaptureUrl;
+    $('openCaptureBtn').href=currentCaptureUrl;
+    const d=device(b.device_id);
+    const masked=b.customer_id_no.length<5?b.customer_id_no:b.customer_id_no.slice(0,2)+'*'.repeat(Math.max(1,b.customer_id_no.length-4))+b.customer_id_no.slice(-2);
+    $('qrSummary').innerHTML=`<div class="grid2"><div class="field"><label>維修單號</label><input value="${esc(b.repair_order)}" disabled></div><div class="field"><label>門市／經辦人</label><input value="${esc(session.storeName)}｜${esc(session.employeeName)} ${esc(session.employeeNo)}" disabled></div><div class="field"><label>證件類型／號碼</label><input value="${esc(b.id_type)}｜${esc(masked)}" disabled></div><div class="field"><label>待用機</label><input value="${esc(d?.model_name||'')}｜${esc(d?.imei||'')}" disabled></div></div>`;
+    drawQR(currentCaptureUrl);
+    await bootstrap();
+    toast('借用資料已建立，QR CODE 已產生');
+  }catch(e){
+    toast(e.message||'建立失敗');
+  }finally{
+    $('createLoanBtn').disabled=false;
   }
 }
 function resetBorrow(){$('borrowForm').classList.remove('hidden');$('qrStage').classList.add('hidden');['repairOrder','custName','custPhone','custAddress','repairDevice','repairSn','repairReason'].forEach(id=>$(id).value='');$('borrowDevice').value='';renderSelected();currentCaptureUrl=''}

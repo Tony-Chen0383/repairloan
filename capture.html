@@ -5,37 +5,47 @@
 .sig-pad *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .sig-fullscreen-btn{position:absolute;right:10px;top:10px;z-index:6;border:1px solid #ccd7e4;background:#fff;border-radius:8px;padding:7px 10px;font-size:12px;font-weight:900;cursor:pointer;color:#24415f}
 .sig-direction-guide,.sig-fullscreen-actions,.sig-orientation-blocker{display:none}
-.sig-pad.fullscreen{position:fixed!important;inset:0!important;z-index:9999!important;border-radius:0!important;border:0!important;background:#f5f7fa!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:10px!important;padding:max(12px,env(safe-area-inset-top)) 14px max(12px,env(safe-area-inset-bottom))!important;box-sizing:border-box!important}
+.sig-pad.fullscreen{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;z-index:9999!important;border-radius:0!important;border:0!important;background:#f5f7fa!important;display:grid!important;grid-template-rows:auto minmax(0,1fr) auto!important;gap:8px!important;padding:max(8px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))!important;box-sizing:border-box!important;overflow:hidden!important}
 .sig-pad.fullscreen .sig-fullscreen-btn{display:none!important}
-.sig-pad.fullscreen .sig-direction-guide{display:flex!important;flex-direction:column;align-items:center;justify-content:center;width:min(920px,100%);text-align:center;gap:3px;flex:0 0 auto;color:#183b5b;font-size:13px;line-height:1.4}
-.sig-pad.fullscreen .sig-direction-guide b{font-size:15px}
-.sig-pad.fullscreen canvas{display:block!important;width:min(1200px,96vw)!important;height:auto!important;aspect-ratio:10/3!important;max-height:calc(100dvh - 150px)!important;flex:0 1 auto!important;border:2px solid #b9c8d7!important;border-radius:12px!important;background:#fff!important;box-shadow:0 8px 28px rgba(16,56,95,.12);pointer-events:auto!important;touch-action:none!important}
-.sig-pad.fullscreen .sig-fullscreen-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:12px!important;width:min(760px,96vw)!important;flex:0 0 auto!important}
+.sig-pad.fullscreen .sig-direction-guide{display:flex!important;flex-direction:column;align-items:center;justify-content:center;width:100%;text-align:center;gap:1px;color:#183b5b;font-size:12px;line-height:1.3;min-height:32px}
+.sig-pad.fullscreen .sig-direction-guide b{font-size:14px}
+
+/* 手動模式：不要求手機開啟自動旋轉。
+   若目前仍是直立畫面，直接把整個簽名 viewport 轉成橫式；
+   客人只要依橫向畫面由左至右簽名，不會再被要求第二次旋轉。 */
+.sig-pad.fullscreen.manual-entry.virtual-landscape{width:100dvh!important;height:100dvw!important;inset:auto!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%) rotate(90deg)!important;transform-origin:center center!important}
+
+.sig-pad.fullscreen canvas{display:block!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;aspect-ratio:auto!important;border:2px solid #b9c8d7!important;border-radius:10px!important;background:#fff!important;box-shadow:0 6px 20px rgba(16,56,95,.12);touch-action:none!important;pointer-events:auto!important;box-sizing:border-box!important}
+.sig-pad.fullscreen .sig-fullscreen-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;width:100%!important;margin:0!important}
 .sig-action-clear,.sig-action-complete{min-height:48px;border:0;border-radius:10px;font-size:16px;font-weight:900;color:#fff;cursor:pointer;letter-spacing:.5px}
 .sig-action-clear{background:#c62828}.sig-action-complete{background:#168447}.sig-action-complete:disabled{background:#9fb3a6;cursor:not-allowed}
-.sig-pad.fullscreen .sig-orientation-blocker{display:flex;position:absolute;inset:54px 12px 74px;z-index:5;align-items:center;justify-content:center;pointer-events:none}
+
+/* 自動旋轉模式才啟用方向保護：必須是前鏡頭／手機頂端在左側的實體橫向。 */
+.sig-pad.fullscreen.auto-entry .sig-orientation-blocker{display:flex;position:absolute;inset:54px 12px 74px;z-index:5;align-items:center;justify-content:center;pointer-events:none}
 .sig-orientation-card{display:none;flex-direction:column;align-items:center;gap:7px;background:rgba(255,250,235,.98);border:2px solid #e7a519;border-radius:16px;padding:18px 24px;text-align:center;color:#7a4b00;box-shadow:0 12px 34px rgba(0,0,0,.13)}
 .sig-orientation-card .sig-orientation-arrow{font-size:42px;line-height:1}.sig-orientation-card b{font-size:17px}.sig-orientation-card span{font-size:13px}
-.sig-pad.fullscreen.orientation-invalid .sig-orientation-card{display:flex}
-.sig-pad.fullscreen.orientation-invalid canvas{pointer-events:none!important;opacity:.38}
-.sig-pad.fullscreen.orientation-invalid .sig-action-complete{pointer-events:none}
+.sig-pad.fullscreen.auto-entry.orientation-invalid .sig-orientation-card{display:flex}
+.sig-pad.fullscreen.auto-entry.orientation-invalid canvas{pointer-events:none!important;opacity:.38}
+.sig-pad.fullscreen.auto-entry.orientation-invalid .sig-action-complete{pointer-events:none}
+
 .sig-pad:not(.fullscreen) canvas{pointer-events:none!important;touch-action:auto!important;cursor:default!important}
-.sig-pad:not(.fullscreen)::after{content:"請點「橫向滿版簽名」，或將手機轉為指定橫向";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;padding:9px 14px;border-radius:999px;background:rgba(245,248,251,.96);border:1px solid #d6e0ea;color:#5b6c7d;font-size:13px;font-weight:800;white-space:nowrap;pointer-events:none}
+.sig-pad:not(.fullscreen)::after{content:"直立頁面不可直接簽名";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;padding:9px 14px;border-radius:999px;background:rgba(245,248,251,.96);border:1px solid #d6e0ea;color:#5b6c7d;font-size:13px;font-weight:800;white-space:nowrap;pointer-events:none}
 .sig-pad.fullscreen::after{display:none!important}
 .signature-tip{font-size:12px;line-height:1.65;color:#617188;margin-top:8px}
 .signature-guard,.signature-guard *{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important;-webkit-tap-highlight-color:transparent!important}
 .signature-guard{touch-action:none!important;overscroll-behavior:none!important}
+.signature-guard canvas{touch-action:none!important;-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important}
 body.signature-drawing-lock{overflow:hidden!important;overscroll-behavior:none!important}
 body.signature-drawing-lock *{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important}
 .actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:12px}.btn{border:0;border-radius:11px;padding:11px 14px;font-weight:900}.primary{background:linear-gradient(135deg,#2367b6,#3b82d4);color:#fff}.ghost{background:#fff;border:1px solid var(--line);color:#526176}.btn:disabled{opacity:.45}.progress{height:8px;background:#e8edf3;border-radius:99px;overflow:hidden;margin-top:10px}.progress i{display:block;height:100%;background:#2e77c8;width:0}.note{font-size:12px;line-height:1.6;color:var(--muted)}.warn{background:#fff8e8;border:1px solid #f1d9a4;padding:11px;border-radius:11px;color:#75530d;font-size:12px;line-height:1.55}.success{background:#eaf8f0;border:1px solid #cdebd9;color:#176942;padding:13px;border-radius:12px;line-height:1.6}.error{background:#fff0ef;border:1px solid #f3cbc7;color:#9f271d;padding:13px;border-radius:12px}.page-prev{display:grid;grid-template-columns:1fr 1fr;gap:8px}.page-prev img{width:100%;border:1px solid var(--line);border-radius:8px}.hidden{display:none!important}@media(max-width:600px){.summary,.photo-grid,.page-prev{grid-template-columns:1fr}.steps{grid-template-columns:1fr 1fr 1fr}.preview{height:155px}.head{top:4px}}
-</style><script src="app/config.js?v=2.0.1"></script><script src="app/api.js?v=2.0.1"></script><script src="app/renderer.js?v=2.0.1"></script></head><body><div class="wrap"><div class="head"><img src="assets/company-logo.png"><div><b>創宇待用機借用管理系統</b><small>QR 借出｜6 面機況 × 證件浮水印 × 電子簽名</small></div></div><div class="steps"><div class="on">1 借用資料</div><div class="on">2 6面照片</div><div class="on">3 證件</div><div class="on">4 簽名</div><div class="on">5 確認借出</div></div><div id="loading" class="card">正在讀取借用資料…</div><div id="errorBox" class="card error hidden"></div><main id="main" class="hidden"><div class="card"><h2>借用資料確認</h2><div id="summary" class="summary"></div></div><div class="card"><h2>借出前 6 面機況照片 <span id="photoCount" class="oktag">0 / 6</span></h2><p class="note">照片會先壓縮後存入 Supabase Private Storage，並同時用於 P2 PDF。可重新拍攝覆蓋同一面。</p><div id="photoGrid" class="photo-grid"></div><div class="field"><label>借出前機況備註</label><textarea id="borrowNote" rows="2"></textarea></div></div><div class="card"><h2>顧客證件 <span class="watermark">不保存 Supabase</span></h2><div class="warn">證件正反面只保留在目前瀏覽器記憶體，會自動加上「限創宇通訊待用機使用」浮水印並嵌入 P1。重新整理頁面後需重新拍攝證件。</div><div class="field"><label>完整證件號碼 *</label><input id="idNo" autocomplete="off" autocapitalize="characters"></div><div id="idGrid" class="photo-grid"></div></div><div class="card"><h2>手機借用合約條款</h2><div id="terms" class="terms"></div><label class="note" style="display:flex;gap:8px;margin-top:10px"><input id="agree" type="checkbox">顧客已閱讀並同意以上條款，並確認借出前機況。</label><h3>顧客電子簽名</h3>
+</style><script src="app/config.js?v=2.0.1"></script><script src="app/api.js?v=2.0.1"></script><script src="app/renderer.js?v=2.0.1"></script></head><body><div class="wrap"><div class="head"><img src="assets/company-logo.png"><div><b>創宇待用機借用管理系統</b><small>QR 借出｜6 面機況 × 證件浮水印 × 電子簽名</small></div></div><div class="steps"><div class="on">1 借用資料</div><div class="on">2 6面照片</div><div class="on">3 證件</div><div class="on">4 簽名</div><div class="on">5 確認借出</div></div><div id="loading" class="card">正在讀取借用資料…</div><div id="errorBox" class="card error hidden"></div><main id="main" class="hidden"><div class="card"><h2>借用資料確認</h2><div id="summary" class="summary"></div></div><div class="card"><h2>借出前 6 面機況照片 <span id="photoCount" class="oktag">0 / 6</span></h2><p class="note">照片會先壓縮後存入 Supabase Private Storage，並同時用於 P2 PDF。可重新拍攝覆蓋同一面。</p><div id="photoGrid" class="photo-grid"></div><div class="field"><label>借出前機況備註</label><textarea id="borrowNote" rows="2"></textarea></div></div><div class="card"><h2>顧客證件 <span class="watermark">不保存 Supabase</span></h2><div class="warn">證件正反面只保留在目前瀏覽器記憶體，會自動加上「限創宇通訊待用機使用」浮水印並嵌入 P1。重新整理頁面後需重新拍攝證件。</div><div class="field"><label>證件號碼</label><input id="idNoDisplay" value="由門市送單前帶入" disabled></div><div id="idGrid" class="photo-grid"></div></div><div class="card"><h2>手機借用合約條款</h2><div id="terms" class="terms"></div><label class="note" style="display:flex;gap:8px;margin-top:10px"><input id="agree" type="checkbox">顧客已閱讀並同意以上條款，並確認借出前機況。</label><h3>顧客電子簽名</h3>
 <div id="signaturePadWrap" class="sig-pad signature-guard">
   <button type="button" class="sig-fullscreen-btn" id="toggleSignatureFullscreen">橫向滿版簽名</button>
   <div class="sig-direction-guide" id="signatureDirectionGuide">
-    <b>固定簽名方向</b><span>請將手機逆時針旋轉 90°（手機頂端／前鏡頭朝左），姓名由左往右簽。</span>
+    <b>橫向簽名</b><span>姓名請由左至右簽寫。</span>
   </div>
   <div class="sig-orientation-blocker" id="signatureOrientationBlocker">
-    <div class="sig-orientation-card"><div class="sig-orientation-arrow">↺</div><b>請將手機逆時針旋轉 90°</b><span>手機頂端／前鏡頭朝左後才可開始簽名；直立畫面禁止簽名。</span></div>
+    <div class="sig-orientation-card"><div class="sig-orientation-arrow">↺</div><b>自動旋轉方向不正確</b><span>請將手機轉成橫向，並讓手機頂端／前鏡頭位於左側後再簽名。</span></div>
   </div>
   <canvas id="sig" class="sig"></canvas>
   <div class="sig-fullscreen-actions">
@@ -43,5 +53,5 @@ body.signature-drawing-lock *{-webkit-user-select:none!important;user-select:non
     <button type="button" class="sig-action-complete" id="completeSignatureFullscreenBtn">完成</button>
   </div>
 </div>
-<div class="signature-tip">兩種方式皆可：① 完成前面資料後，手機轉成指定橫向會自動開啟簽名板；② 點「橫向滿版簽名」手動進入。只有手機頂端／前鏡頭朝左的橫向可簽名，直立或相反橫向皆禁止下筆。</div>
-<div class="actions"><button id="clearSig" class="btn ghost">清除簽名</button></div></div><div class="card"><h2>P1＋P2 預覽與最後確認</h2><div class="note">P1：合約＋證件正反面＋電子簽名；P2：借出前 6 面機況＋備註。確認後會 Freeze 借出 Snapshot 並上傳 Google Drive。</div><div id="preview" class="page-prev hidden"><img id="p1Prev"><img id="p2Prev"></div><div class="progress"><i id="bar"></i></div><div id="statusText" class="note"></div><div class="actions"><button id="previewBtn" class="btn ghost">產生 P1＋P2 預覽</button><button id="finalBtn" class="btn primary">最後確認借出</button></div></div><div id="done" class="card success hidden"></div></main></div><script src="app/capture-v203.js?v=20260909-3"></script></body></html>
+<div class="signature-tip">兩種方式：① 點右上「橫向滿版簽名」：系統直接切成橫向簽名，不需要再開啟自動旋轉；② 手機開啟自動旋轉後，轉成橫向會自動啟動簽名，且手機頂端／前鏡頭需在左側。兩種方式皆由左至右簽名；直立頁面不可直接下筆。</div>
+<div class="actions"><button id="clearSig" class="btn ghost">清除簽名</button></div></div><div class="card"><h2>P1＋P2 預覽與最後確認</h2><div class="note">P1：合約＋證件正反面＋電子簽名；P2：借出前 6 面機況＋備註。確認後會 Freeze 借出 Snapshot 並上傳 Google Drive。</div><div id="preview" class="page-prev hidden"><img id="p1Prev"><img id="p2Prev"></div><div class="progress"><i id="bar"></i></div><div id="statusText" class="note"></div><div class="actions"><button id="previewBtn" class="btn ghost">產生 P1＋P2 預覽</button><button id="finalBtn" class="btn primary">最後確認借出</button></div></div><div id="done" class="card success hidden"></div></main></div><script src="app/capture-v204.js?v=20260910-1"></script></body></html>
